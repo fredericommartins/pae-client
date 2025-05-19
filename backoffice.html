@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Faction Simulation UI Sample</title>
+  <style>
+    body { background: #121212; color: #e0e0e0; font-family: sans-serif; padding: 2rem; }
+    .section { margin-bottom: 2rem; }
+    input, select, button { margin-top: 0.5rem; padding: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Faction Simulation UI Sample</h1>
+
+  <div class="section">
+    <h2>Create Player</h2>
+    <label>
+      Nationality:
+      <select id="nationalitySelect">
+        <option value="US">US</option>
+        <option value="JP">JP</option>
+      </select>
+    </label>
+    <br/>
+    <label>
+      Gender:
+      <select id="genderSelect">
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+        <option value="X">Synthetic</option>
+      </select>
+    </label>
+    <br/>
+    <label>
+      Faction:
+      <select id="factionSelect"></select>
+    </label>
+    <br/>
+    <button onclick="createPlayer()">Create</button>
+    <div id="playerResult"></div>
+  </div>
+
+  <div class="section">
+    <h2>Get Player Info</h2>
+    <input type="text" id="playerIdInput" placeholder="Player ID" />
+    <button onclick="getPlayer()">Fetch</button>
+    <pre id="playerInfo"></pre>
+  </div>
+
+  <div class="section">
+    <h2>Betray Action</h2>
+    <input type="text" id="betrayPlayerId" placeholder="Player ID" />
+    <input type="text" id="betrayToFaction" placeholder="Target Faction" />
+    <button onclick="betrayFaction()">Betray</button>
+    <pre id="betrayResult"></pre>
+  </div>
+
+  <script>
+    const apiBase = 'http://localhost:8000';
+
+    async function fetchFactions() {
+      const res = await fetch(`${apiBase}/factions`);
+      const factions = await res.json();
+      const select = document.getElementById('factionSelect');
+      factions.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.innerText = f;
+        select.appendChild(opt);
+      });
+    }
+
+    async function createPlayer() {
+      const nationality = document.getElementById('nationalitySelect').value;
+      const gender = document.getElementById('genderSelect').value;
+      const faction = document.getElementById('factionSelect').value;
+
+      const res = await fetch(`${apiBase}/player/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nationality: nationality, gender: gender, faction: faction })
+      });
+      const data = await res.json();
+      document.getElementById('playerResult').innerText = `Created Player: ${data.player}\n` + JSON.stringify(data, null, 2);
+    }
+
+    async function getPlayer() {
+      const id = document.getElementById('playerIdInput').value;
+      const res = await fetch(`${apiBase}/player/${id}`);
+      const data = await res.json();
+      document.getElementById('playerInfo').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function betrayFaction() {
+      const id = document.getElementById('betrayPlayerId').value;
+      const target = document.getElementById('betrayToFaction').value;
+      const res = await fetch(`${apiBase}/reputation_change`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player_id: id, target_faction: target })
+      });
+      const data = await res.json();
+      document.getElementById('betrayResult').innerText = JSON.stringify(data, null, 2);
+    }
+
+    fetchFactions();
+  </script>
+</body>
+</html>

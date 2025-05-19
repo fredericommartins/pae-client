@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Poliæther Simulation</title>
+  <link rel="stylesheet" href="css/game.css" />
+  <style>
+    body { background: #121212; color: #e0e0e0; font-family: sans-serif; padding: 2rem; }
+    .section { margin-bottom: 2rem; }
+    input, select, button { margin-top: 0.5rem; padding: 0.5rem; font-size: 1rem; }
+    .faction-card { cursor: pointer; opacity: 0.5; pointer-events: none; transition: opacity 0.3s; }
+    .faction-card.enabled { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img src="assets/logo.png" alt="Poliæther logo" class="logo-img" />
+    <p class="tagline">A simulation-ground for new ways of living — political, economic, and ecological</p>
+  </header>
+
+  <main class="main container">
+    <button onclick="logout()">Logout</button>
+    <!-- Login/Register Modal -->
+    <section class="auth-overlay" id="auth-section">
+      <div class="auth-box">
+        <h2>Login or Register</h2>
+        <label>
+          Username:
+          <input type="text" id="auth-username" />
+        </label><br/>
+        <label>
+          Password:
+          <input type="password" id="auth-password" />
+        </label><br/>
+        <button onclick="register()">Register</button>
+        <button onclick="login()">Login</button>
+        <p id="auth-status"></p>
+      </div>
+    </section>
+
+    <!-- Select your identity -->
+    <section class="section" id="player-info-section">
+      <h2>Enter Your Identity</h2>
+      <label>
+        Origin:
+        <select id="nationalitySelect">
+          <option value="">Loading...</option>
+        </select>
+      </label><br/>
+      <label>
+        Type:
+        <select id="genderSelect">
+          <option value="">Loading...</option>
+        </select>
+      </label>
+    </section>
+
+    <!-- Choose your faction -->
+    <h2 class="choose-faction-title">Choose Your Faction</h2>
+    <section class="factions" aria-label="Factions in Poliaether world">
+      <article class="faction-card gaia" data-faction="Gaia" tabindex="0" aria-describedby="desc-gaia">
+        <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #4ca);">⛤</div>
+        <h2>Gaia</h2>
+        <p id="desc-gaia">
+          A liquid anarchist eco-community focused on collective care, environmental resilience, and harmonious living.
+        </p>
+      </article>
+      <article class="faction-card anarcap" data-faction="Anarcap" tabindex="0" aria-describedby="desc-anarcap">
+        <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #e65);">⛃</div>
+        <h2>Anarcap</h2>
+        <p id="desc-anarcap">
+          A liquid anarcho-capitalist community prioritizing voluntary market interactions, private property, and decentralized governance.
+        </p>
+      </article>
+      <article class="faction-card nullstate" data-faction="Nullstate" tabindex="0" aria-describedby="desc-nullstate">
+        <div class="icon" aria-hidden="true" style="font-weight:900; font-size:2.5rem;">∅</div>
+        <h2>Nullstate</h2>
+        <p id="desc-nullstate">
+          A crypto-anarchist, decentralized network operating through encrypted protocols, cryptographic proof, and absolute privacy.
+        </p>
+      </article>
+    </section>
+
+    <section class="map-container section">
+      <h2>Territory Map</h2>
+      <div class="map" id="map"></div>
+    </section>
+
+    <section class="player-info section">
+      <h2>Player Status</h2>
+      <p>Name: <span id="player-name">None</span></p>
+      <p>Faction: <span id="player-faction">None</span></p>
+      <div id="reputation-symbols" class="section"></div>
+    </section>
+  </main>
+  <footer>
+    © 2025 Poliæther · All rights reserved
+  </footer>
+  <script src="js/game.js"></script>
+</body>
+</html>
