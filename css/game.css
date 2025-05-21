@@ -1,8 +1,24 @@
-body {
+/* Base Reset & Font */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
   margin: 0;
+  display: flex;
+  flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #0f0f0f;
   color: #e0e0e0;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .header {
@@ -14,9 +30,9 @@ body {
   border-radius: 1rem;
   box-shadow: 0 0 20px rgba(0, 255, 170, 0.04);
   color: #00f4b0;
-background-color: #051417; /* subtle glow */
-background: linear-gradient(135deg, #031b1d 0%, #031b1d 70px, #051417 110px, #051417 100%);
-box-shadow: 0 0 10px #00f4b0aa; /* light glow effect */
+  background-color: #051417; /* subtle glow */
+  background: linear-gradient(135deg, #031b1d 0%, #031b1d 70px, #051417 110px, #051417 100%);
+  box-shadow: 0 0 10px #00f4b0aa; /* light glow effect */
 }
 
 header.header {
@@ -49,6 +65,7 @@ header.header {
 
 .main {
   padding: 2rem;
+  flex: 1;
 }
 
 .factions {
@@ -250,6 +267,32 @@ label {
   align-items: center;
 }
 
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #121212; /* or whatever "empty" background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.spinner {
+  border: 8px solid #333;
+  border-top: 8px solid #00ffe7;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .auth-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -282,31 +325,10 @@ label {
 }
 
 .choose-faction-title {
-  text-align: center;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
-
-/* Reset & base */
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  font-family: 'Space Grotesk', sans-serif;
-  background: linear-gradient(135deg, #9ce9d6 0%, #3d6b63 100%);
-  color: #fff;
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-}
-a {
-  color: #6ee7b7;
-  text-decoration: none;
-}
-a:hover,
-a:focus {
-  text-decoration: underline;
+  align-items: center;     /* Vertical */
+  justify-content: center; /* Horizontal */
+  height: 200px;
 }
 
 /* Container */
@@ -317,7 +339,22 @@ a:focus {
   flex: 1 0 auto;
 }
 
+.auth-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 1rem;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 6px #4caf9f);
+}
 
+.auth-overlay {
+  transition: opacity 0.3s ease;
+}
+
+.auth-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* Factions grid */
 .factions {
@@ -341,6 +378,11 @@ a:focus {
 }
 .faction-card:hover {
   background: rgba(255 255 255 / 0.18);
+}
+
+.faction-card.enabled {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Faction icon placeholders */
@@ -367,7 +409,8 @@ a:focus {
 .anarcap {
   background: linear-gradient(145deg, #121212, #323232);
   filter: drop-shadow(0 0 12px #e65100);
-  color: #e65100;}
+  color: #e65100;
+}
 /* Nullstate */
 .nullstate {
   background: linear-gradient(145deg, #121212, #323232);
@@ -409,15 +452,40 @@ a:focus {
   outline: none;
 }
 
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main,
+#offline-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align:center;
+
+}
+
+footer {
+  background: #222;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
 /* Footer */
 footer {
-  background: #002822;
-  color: #00ffe7cc;
+  padding: 1rem;
   text-align: center;
-  padding: 1rem 1rem;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  user-select: none;
+  background: #181818;
+  color: #888;
+  margin-top: 4rem;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-bottom: calc(-50vw + 50%);
 }
 
 /* Responsive adjustments */

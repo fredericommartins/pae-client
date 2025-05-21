@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Poliæther Simulation</title>
+  <title>Poliæther</title>
   <link rel="stylesheet" href="css/game.css" />
   <style>
     body { background: #121212; color: #e0e0e0; font-family: sans-serif; padding: 2rem; }
@@ -18,42 +18,48 @@
     <img src="assets/logo.png" alt="Poliæther logo" class="logo-img" />
     <p class="tagline">A simulation-ground for new ways of living — political, economic, and ecological</p>
   </header>
-
-  <main class="main container">
-    <button onclick="logout()">Logout</button>
+  <!-- Loader Modal -->
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+  <!-- Offline Modal -->
+  <section id="offline-section" class="content" style="display:none;">
+    <h2>Offline Mode</h2>
+    <p>The Poliæther servers are currently unavailable. Please try again later.</p>
+  </section>
+  <main id="main" class="main container content" style="display: none;">
     <!-- Login/Register Modal -->
     <section class="auth-overlay" id="auth-section">
       <div class="auth-box">
-        <h2>Login or Register</h2>
-        <label>
-          Username:
+        <img src="assets/logo_background.png" alt="Auth Icon" class="auth-icon" />
+        <h2 id="auth-title">Login</h2>
+
+        <label>Username:<br/>
           <input type="text" id="auth-username" />
         </label><br/>
-        <label>
-          Password:
+
+        <label>Password:<br/>
           <input type="password" id="auth-password" />
         </label><br/>
-        <button onclick="register()">Register</button>
-        <button onclick="login()">Login</button>
+
+        <!-- Extra fields, hidden by default -->
+        <div id="extra-fields" style="display: none;">
+          <label>Origin:<br/>
+            <select id="nationalitySelect">
+              <option value="">Loading...</option>
+            </select>
+          </label><br/>
+          <label>Type:<br/>
+            <select id="genderSelect">
+              <option value="">Loading...</option>
+            </select>
+          </label><br/>
+        </div>
+        <button id="login-btn" onclick="login()">Login</button>
+        <button id="switch-to-register-btn" onclick="switchToRegister()">Register</button>
+        <button id="register-btn" onclick="register()" style="display: none;">Register</button>
         <p id="auth-status"></p>
       </div>
-    </section>
-
-    <!-- Select your identity -->
-    <section class="section" id="player-info-section">
-      <h2>Enter Your Identity</h2>
-      <label>
-        Origin:
-        <select id="nationalitySelect">
-          <option value="">Loading...</option>
-        </select>
-      </label><br/>
-      <label>
-        Type:
-        <select id="genderSelect">
-          <option value="">Loading...</option>
-        </select>
-      </label>
     </section>
 
     <!-- Choose your faction -->

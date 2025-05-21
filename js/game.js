@@ -17,56 +17,94 @@ const factionsData = {
 };
 
 const apiBase = 'http://localhost:8000'; // Adjust as needed
+// add here production URl in case local connection is not available
+
+async function checkAPI() {
+  try {
+    const res = await fetch(`${apiBase}/health`, { cache: "no-store" });
+    if (!res.ok) throw new Error("API not OK");
+    const data = await res.json();
+    if (data.status !== "ok") throw new Error("API status not OK");
+    return true;
+  } catch (e) {
+    console.error("API offline:", e);
+    showOfflinePage();
+    hideLoader();
+    return false;
+  }
+}
+
+function showOfflinePage() {
+  document.querySelector("main").style.display = "none";
+  document.getElementById("offline-section").style.display = "block";
+}
+
+function switchToRegister() {
+  document.getElementById("auth-title").textContent = "Register";
+  document.getElementById("extra-fields").style.display = "block";
+  document.getElementById("login-btn").style.display = "none";
+  document.getElementById("register-btn").style.display = "inline-block";
+  document.getElementById("switch-to-register-btn").style.display = "none";
+}
+
+function showAuthBox() {
+  //document.getElementById('auth-section').style.display = 'flex';
+  document.getElementById("auth-section").classList.remove("hidden");
+}
+
+function hideAuthBox() {
+  //document.getElementById("auth-section").style.display = "none";
+  document.getElementById('auth-status').innerText = '';
+  document.getElementById("auth-section").classList.add("hidden");
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
+
+function showMain() {
+  document.getElementById("main").style.display = "block";
+}
 
 async function register() {
-const username = document.getElementById('auth-username').value;
-const password = document.getElementById('auth-password').value;
+  const username = document.getElementById('auth-username').value;
+  const password = document.getElementById('auth-password').value;
+  const origin = document.getElementById('nationalitySelect').value;
+  const type = document.getElementById('genderSelect').value;
 
-const res = await fetch(`${apiBase}/auth/register`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username, password })
-});
+  const res = await fetch(`${apiBase}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, origin, type })
+  })
 
-const data = await res.json();
-document.getElementById('auth-status').innerText = data.message || JSON.stringify(data);
+  const data = await res.json();
+  document.getElementById('auth-status').innerText = data.message || JSON.stringify(data);
+  login();
 }
 
 async function login() {
-const username = document.getElementById('auth-username').value;
-const password = document.getElementById('auth-password').value;
+  const username = document.getElementById('auth-username').value;
+  const password = document.getElementById('auth-password').value;
 
-const res = await fetch(`${apiBase}/auth/login`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username, password })
-});
+  const res = await fetch(`${apiBase}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
 
-if (res.ok) {
-  const data = await res.json();
-  localStorage.setItem('token', data.access_token);
-  document.getElementById('auth-section').style.display = 'none';
-  document.getElementById('auth-status').innerText = '';
-} else {
-  const err = await res.json();
-  document.getElementById('auth-status').innerText = err.detail || "Login failed";
+  if (res.ok) {
+    const data = await res.json();
+    localStorage.setItem('token', data.access_token);
+    hideAuthBox();
+  } else {
+    const err = await res.json();
+    document.getElementById('auth-status').innerText = err.detail || "Login failed";
+  }
 }
-}
-
-function checkAuthSession() {
-const token = localStorage.getItem('token');
-if (token) {
-  // Optionally validate token with backend
-  document.getElementById('auth-section').style.display = 'none';
-} else {
-  document.getElementById('auth-section').style.display = 'flex';
-}
-}
-
-window.addEventListener('DOMContentLoaded', checkAuthSession);
 
 async function logout() {
-const token = localStorage.getItem('access_token');
+const token = localStorage.getItem('token');
 if (!token) {
   alert("You're not logged in.");
   return;
@@ -87,58 +125,45 @@ try {
   }
 
   // Clear token and redirect or refresh page
-  localStorage.removeItem('access_token');
+  localStorage.removeItem('token');
   alert("Logged out successfully.");
   window.location.href = '/';  // or wherever your login page is
 
-} catch (err) {
-  console.error(err);
-  alert("Logout request failed.");
+  } catch (err) {
+    console.error(err);
+    alert("Logout request failed.");
+  }
 }
-}
-
 
 const nationalitySelect = document.getElementById('nationalitySelect');
 const genderSelect = document.getElementById('genderSelect');
 const factionCards = document.querySelectorAll('.faction-card');
 
 async function fetchNationalities() {
-const res = await fetch(`${apiBase}/nationalities`);
-const nationalities = await res.json();
-nationalitySelect.innerHTML = '<option value="">Select Origin</option>';
-nationalities.forEach(n => {
-  const opt = document.createElement('option');
-  opt.value = n;
-  opt.textContent = n.name;
-  nationalitySelect.appendChild(opt);
-});
+  const res = await fetch(`${apiBase}/nationalities`);
+  const nationalities = await res.json();
+  nationalitySelect.innerHTML = '<option value="">Select Origin</option>';
+  nationalities.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = n.name;
+    nationalitySelect.appendChild(opt);
+  });
 }
 
 async function fetchGenders() {
-const res = await fetch(`${apiBase}/genders`);
-const genders = await res.json();
-genderSelect.innerHTML = '<option value="">Select Type</option>';
-genders.forEach(g => {
-  const opt = document.createElement('option');
-  opt.value = g;
-  opt.textContent = g;
-  genderSelect.appendChild(opt);
-});
+  const res = await fetch(`${apiBase}/genders`);
+  const genders = await res.json();
+  genderSelect.innerHTML = '<option value="">Select Type</option>';
+  genders.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    genderSelect.appendChild(opt);
+  });
 }
 
-function checkInputs() {
-const nat = nationalitySelect.value;
-const gen = genderSelect.value;
-if (nat && gen) {
-  factionCards.forEach(card => card.classList.add('enabled'));
-} else {
-  factionCards.forEach(card => card.classList.remove('enabled'));
-}
-}
-
-nationalitySelect.addEventListener('change', checkInputs);
-genderSelect.addEventListener('change', checkInputs);
-
+factionCards.forEach(card => card.classList.add('enabled'));
 factionCards.forEach(card => {
 card.addEventListener('click', async () => {
   if (!card.classList.contains('enabled')) return;
@@ -148,10 +173,11 @@ card.addEventListener('click', async () => {
   const gender = genderSelect.value;
 
   try {
+    const token = localStorage.getItem('token');
     const res = await fetch(`${apiBase}/player/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nationality, gender, faction })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+      body: JSON.stringify({ faction })
     });
 
     if (!res.ok) {
@@ -174,7 +200,6 @@ card.addEventListener('click', async () => {
       repSymbolContainer.appendChild(item);
     });
 
-
     document.getElementById('player-name').textContent = player.id;
     document.getElementById('player-faction').textContent = player.faction;
   } catch (err) {
@@ -184,14 +209,45 @@ card.addEventListener('click', async () => {
 });
 });
 
-// Initialize
-fetchNationalities();
-fetchGenders();
-
-// Dummy map rendering
-const mapElement = document.getElementById("map");
-for (let i = 0; i < 100; i++) {
-const tile = document.createElement("div");
-tile.className = "tile";
-mapElement.appendChild(tile);
+// Optionally, validate with backend
+async function validateToken() {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${apiBase}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.ok;
 }
+
+async function initApp() {
+  // API status availability
+  const online = await checkAPI();
+  if (online) {
+    // Initialize
+    fetchNationalities();
+    fetchGenders();
+
+    // Dummy map rendering
+    const mapElement = document.getElementById("map");
+    for (let i = 0; i < 100; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    mapElement.appendChild(tile);
+    }
+  } else {
+    return;
+  }
+  // Validate session token
+  if (await validateToken()) {
+    hideAuthBox();
+  } else {
+    showAuthBox();
+  }
+  hideLoader();
+  showMain();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  initApp();
+});
