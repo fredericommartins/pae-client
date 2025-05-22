@@ -23,27 +23,25 @@
     <div class="spinner"></div>
   </div>
   <!-- Offline Modal -->
-  <section id="offline-section" class="content" style="display:none;">
-    <h2>Offline Mode</h2>
-    <p>The Poliæther servers are currently unavailable. Please try again later.</p>
+  <section id="offline-section">
+    <div class="offline-content">
+      <h2><strong>Offline Mode</strong></h2>
+      <p>The Poliæther servers are currently unavailable. Please try again later.</p>
+    </div>
   </section>
-  <main id="main" class="main container content" style="display: none;">
+  <main id="main" class="main container content">
     <!-- Login/Register Modal -->
-    <section class="auth-overlay" id="auth-section" style="display: none;">
+    <section id= "auth-section" class="auth-overlay">
       <div class="auth-box">
         <img src="assets/logo_background.png" alt="Auth Icon" class="auth-icon" />
         <h2 id="auth-title">Login</h2>
-
         <label>Username:<br/>
           <input type="text" id="auth-username" />
         </label><br/>
-
         <label>Password:<br/>
           <input type="password" id="auth-password" />
         </label><br/>
-
-        <!-- Extra fields, hidden by default -->
-        <div id="extra-fields" style="display: none;">
+        <div id="extra-fields">
           <label>Origin:<br/>
             <select id="nationalitySelect">
               <option value="">Loading...</option>
@@ -57,13 +55,13 @@
         </div>
         <button id="login-btn" onclick="loginUser()">Login</button>
         <button id="switch-to-register-btn" onclick="switchToRegister()">Register</button>
-        <button id="register-btn" onclick="registerUser()" style="display: none;">Register</button>
+        <button id="register-btn" onclick="registerUser()">Register</button>
         <p id="auth-status"></p>
       </div>
     </section>
 
     <!-- Choose your faction -->
-    <div id="faction-select" style="display: none;">
+    <div id="faction-select">
       <h2 class="choose-faction-title">Choose Your Faction</h2>
       <section class="factions" aria-label="Factions in Poliaether world">
         <article class="faction-card gaia" data-faction="Gaia" tabindex="0" aria-describedby="desc-gaia">
@@ -101,39 +99,6 @@
       <h2>World Map</h2>
       <div class="map" id="map"></div>
     </section>
-
-    <div>
-  <input id="btc-address" placeholder="Your BTC address" />
-  <button onclick="getQR()">Get Login QR</button>
-</div>
-
-<div id="qr-container" style="margin: 20px;"></div>
-
-<form id="login-form">
-  <input name="address" placeholder="Paste your BTC address again" required />
-  <textarea name="signature" placeholder="Paste your signature" required></textarea>
-  <button type="submit">Verify Signature</button>
-</form>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script>
-async function getQR() {
-  const apiBase = 'http://localhost:8000'; // Adjust as needed
-  const address = document.getElementById("btc-address").value;
-  if (!address) return alert("Enter your BTC address first");
-
-  const res = await fetch(`${apiBase}/auth/nonce/${address}`);
-  const { message } = await res.json();
-
-  // Show QR code
-  const container = document.getElementById("qr-container");
-  container.innerHTML = "";
-  QRCode.toCanvas(message, { width: 300 }, (err, canvas) => {
-    if (err) return console.error(err);
-    container.appendChild(canvas);
-  });
-}
-</script>
   </main>
   <footer>
     © 2025 Poliæther · All rights reserved

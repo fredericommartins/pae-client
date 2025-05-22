@@ -63,6 +63,10 @@ header.header {
   color: #888;
 }
 
+#main {
+  display: none;
+}
+
 .main {
   padding: 2rem;
   flex: 1;
@@ -301,6 +305,10 @@ label {
   to { transform: rotate(360deg); }
 }
 
+#auth-section {
+  display: none;
+}
+
 .auth-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -332,6 +340,17 @@ label {
   border: 1px solid #555;
 }
 
+#extra-fields {
+  display: none;
+}
+
+#register-btn {
+  display: none;
+}
+
+#faction-select {
+  display: none;
+}
 .choose-faction-title {
   display: flex;
   align-items: center;     /* Vertical */
@@ -467,7 +486,6 @@ label {
   min-height: 100vh;
 }
 
-main,
 #offline-section {
   flex: 1;
   display: flex;
@@ -475,7 +493,7 @@ main,
   align-items: center;
   padding: 2rem;
   text-align:center;
-
+  display: none;
 }
 
 footer {
