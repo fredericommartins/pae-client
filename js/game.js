@@ -34,7 +34,7 @@ const factionCards = document.querySelectorAll('.faction-card');
 function showOfflinePage() {
   document.querySelector("main").style.display = "none";
   document.body.style.background = "radial-gradient(circle at center, #1f1f1f, #0e0e0e)";
-  //document.footer.style.background = "None";
+  document.querySelector('footer').style.background = 'none';
   document.getElementById("offline-section").style.display = "flex";
 }
 

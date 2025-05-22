@@ -99,11 +99,46 @@
       <h2>World Map</h2>
       <div class="map" id="map"></div>
     </section>
+
+<!-- TESTING -->
+<div>
+  <input id="btc-address" placeholder="Your BTC address" />
+  <button onclick="getQR()">Get Login QR</button>
+</div>
+
+<div id="qr-container" style="margin: 20px;"></div>
+
+<form id="login-form">
+  <input name="address" placeholder="Paste your BTC address again" required />
+  <textarea name="signature" placeholder="Paste your signature" required></textarea>
+  <button type="submit">Verify Signature</button>
+</form>
   </main>
   <footer>
     © 2025 Poliæther · All rights reserved
   </footer>
   <script src="js/game.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- TESTING -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+  async function getQR() {
+    const apiBase = 'http://localhost:8000'; // Adjust as needed
+    const address = document.getElementById("btc-address").value;
+    if (!address) return alert("Enter your BTC address first");
+
+    const res = await fetch(`${apiBase}/auth/nonce/${address}`);
+    const { message } = await res.json();
+
+    // Show QR code
+    const container = document.getElementById("qr-container");
+    container.innerHTML = "";
+    QRCode.toCanvas(message, { width: 300 }, (err, canvas) => {
+      if (err) return console.error(err);
+      container.appendChild(canvas);
+    });
+  }
+  </script>
 </body>
 </html>
