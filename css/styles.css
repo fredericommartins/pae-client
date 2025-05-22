@@ -1,0 +1,177 @@
+/* CSS Variables */
+:root {
+  --primary-color: #00ffe7;
+  --secondary-color: #1a1a1a;
+  --font-family: 'Space Grotesk', sans-serif;
+  --border-radius: 0.5rem;
+  --transition-speed: 0.3s;
+}
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: #121212;
+  color: #ffffff;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+}
+
+a:hover {
+  color: #00cbb8;
+}
+
+/* Header */
+.site-header {
+  background-color: var(--secondary-color);
+  padding: 1rem 2rem;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-menu li a {
+  padding: 0.5rem;
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #1a1a1a, #121212);
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+/* Button */
+.btn {
+  background-color: var(--primary-color);
+  color: #121212;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+.btn:hover {
+  background-color: #00cbb8;
+}
+
+/* Factions Section */
+.factions-section {
+  padding: 4rem 2rem;
+  background-color: #1e1e1e;
+}
+
+.faction-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.faction-card {
+  background-color: #2a2a2a;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  text-align: center;
+  transition: transform var(--transition-speed);
+}
+
+.faction-card:hover {
+  transform: translateY(-5px);
+}
+
+.faction-card img {
+  max-width: 100%;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+}
+
+/* About Section */
+.about-section {
+  padding: 4rem 2rem;
+  background-color: #121212;
+}
+
+/* Login Section */
+.login-section {
+  padding: 4rem 2rem;
+  background-color: #1e1e1e;
+}
+
+#login-form {
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#login-form label {
+  font-weight: bold;
+}
+
+#login-form input {
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+}
+
+/* Footer */
+.site-footer {
+  text-align: center;
+  padding: 2rem;
+  background-color: var(--secondary-color);
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .nav-menu {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .faction-cards {
+    grid-template-columns: 1fr;
+  }
+}

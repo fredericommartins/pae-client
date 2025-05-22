@@ -73,31 +73,6 @@ header.header {
   gap: 1.5rem;
 }
 
-.faction-card {
-  background: #1c1c1c;
-  border: 1px solid #333;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  transition: transform 0.2s;
-}
-
-.faction-card:hover {
-  transform: scale(1.02);
-  border-color: #555;
-}
-
-.faction-icon {
-  width: 48px;
-  height: 48px;
-  margin-right: 1rem;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  border: 2px solid #666;
-}
-
 .footer {
   margin-top: 4rem;
   padding: 2rem;
@@ -232,6 +207,39 @@ header.header {
 
 .faction-icon.nullstate::before {
   content: "∅";
+}
+
+.swal-radial-popup {
+  border-radius: 1rem;
+  border: 1px solid rgba(94, 234, 212, 0.2);
+  box-shadow: 0 0 25px rgba(94, 234, 212, 0.3);
+  font-family: 'JetBrains Mono', 'Inter', sans-serif;
+  backdrop-filter: blur(6px);
+}
+
+.swal-radial-title {
+  color: #5eead4;
+  font-size: 1.5rem;
+  text-shadow: 0 0 4px rgba(94, 234, 212, 0.3);
+}
+
+.swal-radial-text {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.swal-radial-confirm {
+  background-color: #5eead4 !important;
+  color: #0f172a !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.swal-radial-cancel {
+  background-color: #f87171 !important;
+  color: #fff !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
 }
 
 select, input {
@@ -371,6 +379,7 @@ label {
   padding: 2rem;
   box-shadow: 0 0 20px rgba(0,0,0,0.2);
   display: flex;
+  align-items: center;
   flex-direction: column;
   justify-content: space-between;
   transition: background 0.3s ease;

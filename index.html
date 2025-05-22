@@ -16,7 +16,7 @@
 <body>
   <header class="header">
     <img src="assets/logo.png" alt="Poliæther logo" class="logo-img" />
-    <p class="tagline">A simulation-ground for new ways of living — political, economic, and ecological</p>
+    <p class="tagline">Simulation-ground for geopolitics, economics and ecological ideas</p>
   </header>
   <!-- Loader Modal -->
   <div id="loader">
@@ -29,7 +29,7 @@
   </section>
   <main id="main" class="main container content" style="display: none;">
     <!-- Login/Register Modal -->
-    <section class="auth-overlay" id="auth-section">
+    <section class="auth-overlay" id="auth-section" style="display: none;">
       <div class="auth-box">
         <img src="assets/logo_background.png" alt="Auth Icon" class="auth-icon" />
         <h2 id="auth-title">Login</h2>
@@ -55,54 +55,90 @@
             </select>
           </label><br/>
         </div>
-        <button id="login-btn" onclick="login()">Login</button>
+        <button id="login-btn" onclick="loginUser()">Login</button>
         <button id="switch-to-register-btn" onclick="switchToRegister()">Register</button>
-        <button id="register-btn" onclick="register()" style="display: none;">Register</button>
+        <button id="register-btn" onclick="registerUser()" style="display: none;">Register</button>
         <p id="auth-status"></p>
       </div>
     </section>
 
     <!-- Choose your faction -->
-    <h2 class="choose-faction-title">Choose Your Faction</h2>
-    <section class="factions" aria-label="Factions in Poliaether world">
-      <article class="faction-card gaia" data-faction="Gaia" tabindex="0" aria-describedby="desc-gaia">
-        <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #4ca);">⛤</div>
-        <h2>Gaia</h2>
-        <p id="desc-gaia">
-          A liquid anarchist eco-community focused on collective care, environmental resilience, and harmonious living.
-        </p>
-      </article>
-      <article class="faction-card anarcap" data-faction="Anarcap" tabindex="0" aria-describedby="desc-anarcap">
-        <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #e65);">⛃</div>
-        <h2>Anarcap</h2>
-        <p id="desc-anarcap">
-          A liquid anarcho-capitalist community prioritizing voluntary market interactions, private property, and decentralized governance.
-        </p>
-      </article>
-      <article class="faction-card nullstate" data-faction="Nullstate" tabindex="0" aria-describedby="desc-nullstate">
-        <div class="icon" aria-hidden="true" style="font-weight:900; font-size:2.5rem;">∅</div>
-        <h2>Nullstate</h2>
-        <p id="desc-nullstate">
-          A crypto-anarchist, decentralized network operating through encrypted protocols, cryptographic proof, and absolute privacy.
-        </p>
-      </article>
-    </section>
+    <div id="faction-select" style="display: none;">
+      <h2 class="choose-faction-title">Choose Your Faction</h2>
+      <section class="factions" aria-label="Factions in Poliaether world">
+        <article class="faction-card gaia" data-faction="Gaia" tabindex="0" aria-describedby="desc-gaia">
+          <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #4ca);">⛤</div>
+          <h2>Gaia</h2>
+          <p id="desc-gaia">
+            A liquid anarchist eco-community focused on collective care, environmental resilience, and harmonious living.
+          </p>
+        </article>
+        <article class="faction-card anarcap" data-faction="Anarcap" tabindex="0" aria-describedby="desc-anarcap">
+          <div class="icon" aria-hidden="true" style="filter: drop-shadow(0 0 6px #e65);">⛃</div>
+          <h2>Anarcap</h2>
+          <p id="desc-anarcap">
+            A liquid anarcho-capitalist community prioritizing voluntary market interactions, private property, and decentralized governance.
+          </p>
+        </article>
+        <article class="faction-card nullstate" data-faction="Nullstate" tabindex="0" aria-describedby="desc-nullstate">
+          <div class="icon" aria-hidden="true" style="font-weight:900; font-size:2.5rem;">∅</div>
+          <h2>Nullstate</h2>
+          <p id="desc-nullstate">
+            A crypto-anarchist, decentralized network operating through encrypted protocols, cryptographic proof, and absolute privacy.
+          </p>
+        </article>
+      </section>
+    </div>
 
-    <section class="map-container section">
-      <h2>Territory Map</h2>
-      <div class="map" id="map"></div>
-    </section>
-
-    <section class="player-info section">
+    <section id="player-info" class="player-info section" style="display: none;">
       <h2>Player Status</h2>
       <p>Name: <span id="player-name">None</span></p>
       <p>Faction: <span id="player-faction">None</span></p>
       <div id="reputation-symbols" class="section"></div>
     </section>
+
+    <section id="game-map" class="map-container section" style="display: none;">
+      <h2>World Map</h2>
+      <div class="map" id="map"></div>
+    </section>
+
+    <div>
+  <input id="btc-address" placeholder="Your BTC address" />
+  <button onclick="getQR()">Get Login QR</button>
+</div>
+
+<div id="qr-container" style="margin: 20px;"></div>
+
+<form id="login-form">
+  <input name="address" placeholder="Paste your BTC address again" required />
+  <textarea name="signature" placeholder="Paste your signature" required></textarea>
+  <button type="submit">Verify Signature</button>
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+async function getQR() {
+  const apiBase = 'http://localhost:8000'; // Adjust as needed
+  const address = document.getElementById("btc-address").value;
+  if (!address) return alert("Enter your BTC address first");
+
+  const res = await fetch(`${apiBase}/auth/nonce/${address}`);
+  const { message } = await res.json();
+
+  // Show QR code
+  const container = document.getElementById("qr-container");
+  container.innerHTML = "";
+  QRCode.toCanvas(message, { width: 300 }, (err, canvas) => {
+    if (err) return console.error(err);
+    container.appendChild(canvas);
+  });
+}
+</script>
   </main>
   <footer>
     © 2025 Poliæther · All rights reserved
   </footer>
   <script src="js/game.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
