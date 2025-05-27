@@ -38,6 +38,13 @@ function showOfflinePage() {
   document.getElementById("offline-section").style.display = "flex";
 }
 
+function showWalletWarning() {
+  document.querySelector("main").style.display = "none";
+  document.body.style.background = "radial-gradient(circle at center, #1f1f1f, #0e0e0e)";
+  document.querySelector('footer').style.background = 'none';
+  document.getElementById("wallet-warning-section").style.display = "flex";
+}
+
 function switchToRegister() {
   fetchNationalities();
   fetchGenders();
@@ -123,7 +130,7 @@ function populatePlayer(player) {
     item.innerHTML = `<strong>${factionName}:</strong> ${rep.symbol} (${rep.value})`;
     repSymbolContainer.appendChild(item);
   });
-  document.getElementById('player-name').textContent = player.id;
+  document.getElementById('player-name').textContent = player.name;
   document.getElementById('player-faction').textContent = player.faction;
   hideFactionSelect();
   showPlayerInfo();
@@ -186,7 +193,7 @@ async function loginUser() {
     const data = await res.json();
     localStorage.setItem('token', data.access_token);
     hideAuthBox();
-    isPlayerCreated(data.user);
+    isPlayerCreated(data);
   } else {
     const err = await res.json();
     document.getElementById('auth-status').innerText = err.detail || "Login failed";
@@ -272,6 +279,41 @@ async function createPlayer(faction) {
     }
 }
 
+// Logical bitcoin functions
+async function connectWallet() {
+  if (!window.unisat) {
+    showWalletWarning();
+    return;
+  }
+  const accounts = await window.unisat.requestAccounts();
+  const address = accounts[0];
+  return address;
+}
+
+async function loginWithBitcoin() {
+  const address = await connectWallet();
+  if (!address) return;
+  // Fetch nonce from backend
+  const res = await fetch(`${apiBase}/auth/nonce/${address}`);
+  const message = await res.json();
+  const signature = await window.unisat.signMessage(message);
+  // Send signed login request
+  const loginRes = await fetch(`${apiBase}/auth/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ address, signature })
+  });
+  if (loginRes.ok) {
+    const data = await loginRes.json();
+    localStorage.setItem('token', data.access_token);
+    hideAuthBox();
+    isPlayerCreated(data);
+  } else {
+    const err = await loginRes.json();
+    document.getElementById('auth-status').innerText = err.detail || "Login failed";
+  }
+}
+
 // Optionally, validate with backend
 async function validateToken() {
   const token = localStorage.getItem('token');
@@ -281,7 +323,8 @@ async function validateToken() {
     }
   });
   if (!res.ok) {
-    showAuthBox();
+    //showAuthBox();
+    loginWithBitcoin();
   } else {
     const data = await res.json();
     hideAuthBox();

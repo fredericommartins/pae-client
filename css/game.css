@@ -524,3 +524,53 @@ footer {
     font-size: 1rem;
   }
 }
+
+.wallet-warning {
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #f0f0f0;
+  font-family: 'Inter', sans-serif;
+  padding: 2rem;
+  display: none;
+}
+
+.wallet-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  padding: 2rem 3rem;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  max-width: 400px;
+}
+
+.wallet-card h2 {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.wallet-card p {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  color: #ccc;
+}
+
+.wallet-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border: none;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.wallet-button:hover {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+}
