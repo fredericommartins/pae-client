@@ -1,3 +1,5 @@
+import { initGlobe, focusOnFaction, resizeCanvas } from './globe.js';
+
 const factionsData = {
   gaia: {
     name: "Gaia",
@@ -82,11 +84,56 @@ function showPlayerInfo() {
 }
 
 function showGameMap() {
-  document.getElementById("game-map").style.display = "block";
+  let elem = document.getElementById("game-map")
+  elem.style.display = "block";
 }
 
 function showMain() {
   document.getElementById("main").style.display = "block";
+}
+
+function openModal(section) {
+  const modal = document.getElementById('marketModal');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+  
+  title.textContent = section;
+  content.textContent = `Details and options for the ${section.toLowerCase()} section will go here.`;
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('marketModal').classList.add('hidden');
+}
+
+function applyReputationColor(el, value) {
+  //const el = document.getElementById(id);
+  if (!el) return;
+
+  // Remove previous rep classes
+  el.classList.remove(
+    'rep-burning-red',
+    'rep-red',
+    'rep-neutral',
+    'rep-blue',
+    'rep-green',
+    'rep-electric-green'
+  );
+
+  // Apply appropriate class
+  if (value <= -100) {
+    el.classList.add('rep-burning-red');
+  } else if (value < -30) {
+    el.classList.add('rep-red');
+  } else if (value < 10) {
+    el.classList.add('rep-neutral');
+  } else if (value < 30) {
+    el.classList.add('rep-blue');
+  } else if (value < 100) {
+    el.classList.add('rep-green');
+  } else {
+    el.classList.add('rep-electric-green');
+  }
 }
 
 async function confirmDialog(options = {}) {
@@ -121,17 +168,16 @@ async function confirmDialog(options = {}) {
 }
 
 function populatePlayer(player) {
-  const repSymbolContainer = document.getElementById('reputation-symbols');
-  repSymbolContainer.innerHTML = '<h3>Faction Reputation</h3>';
-
   Object.entries(player.reputation).forEach(([factionName, rep]) => {
-    const item = document.createElement('div');
-    item.style.margin = '0.3rem 0';
-    item.innerHTML = `<strong>${factionName}:</strong> ${rep.symbol} (${rep.value})`;
-    repSymbolContainer.appendChild(item);
+    const repSymbolContainer = document.getElementById(`${factionName.toLowerCase()}-reputation`);
+    repSymbolContainer.innerHTML = new Intl.NumberFormat("en-US", {
+        signDisplay: "exceptZero"
+    }).format(rep.value); // Displays the positive and negative before the numbers
+    applyReputationColor(repSymbolContainer, rep.value);
+    //repSymbolContainer.classList.add(rep.class);
   });
   document.getElementById('player-name').textContent = player.name;
-  document.getElementById('player-faction').textContent = player.faction;
+  document.getElementById(`${player.faction.toLowerCase()}-selection`).classList.add('selected')
   hideFactionSelect();
   showPlayerInfo();
   showGameMap();
@@ -295,6 +341,12 @@ async function loginWithBitcoin() {
   if (!address) return;
   // Fetch nonce from backend
   const res = await fetch(`${apiBase}/auth/nonce/${address}`);
+  if (!res.ok) {
+    const err = await res.json();
+    alert((err.detail || res.statusText));
+    return;
+
+  }
   const message = await res.json();
   const signature = await window.unisat.signMessage(message);
   // Send signed login request
@@ -306,8 +358,7 @@ async function loginWithBitcoin() {
   if (loginRes.ok) {
     const data = await loginRes.json();
     localStorage.setItem('token', data.access_token);
-    hideAuthBox();
-    isPlayerCreated(data);
+    return data;
   } else {
     const err = await loginRes.json();
     document.getElementById('auth-status').innerText = err.detail || "Login failed";
@@ -322,29 +373,21 @@ async function validateToken() {
       Authorization: `Bearer ${token}`
     }
   });
+  let data;
   if (!res.ok) {
     //showAuthBox();
-    loginWithBitcoin();
+    data = await loginWithBitcoin();
   } else {
-    const data = await res.json();
-    hideAuthBox();
-    isPlayerCreated(data);
+    data = await res.json();
   }
+  return data;
 }
 
 async function initApp() {
   // API status availability
   const online = await checkServerStatus();
   if (!online) {
-    return
-  }
-
-  // Dummy map rendering
-  const mapElement = document.getElementById("map");
-  for (let i = 0; i < 100; i++) {
-  const tile = document.createElement("div");
-  tile.className = "tile";
-  mapElement.appendChild(tile);
+    return;
   }
 
   // Faction select
@@ -368,9 +411,49 @@ async function initApp() {
     });
   });
 
-  validateToken();
-  hideLoader();
+  // Open modal on marketplace button click
+  document.querySelectorAll(".grid button").forEach(button => {
+    button.addEventListener("click", () => {
+      const section = button.innerText.trim();
+      openModal(section);
+    });
+  });
+
+  // Click outside modal box closes it
+  document.getElementById('marketModal').addEventListener('click', (e) => {
+    const box = document.getElementById('modalTitle');
+    if (!box.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  // Scroll once to center globe
+  let scrolledOnce = false;
+  let scrollTimeout;
+  window.addEventListener("scroll", () => {
+    if (!scrolledOnce) {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const canvas = document.getElementById("game-map");
+        if (canvas) {
+          canvas.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          scrolledOnce = true;
+        }
+      }, 100); // delay in ms
+    }
+  });
+
+  let data = await validateToken();
+  lucide.createIcons();
+  let world = await initGlobe();
+  window.addEventListener('resize', resizeCanvas);
+  isPlayerCreated(data);
   showMain();
+  hideLoader();
+  resizeCanvas();
 }
 
 window.addEventListener("DOMContentLoaded", () => {

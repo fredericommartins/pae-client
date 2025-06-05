@@ -3,15 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Poliæther</title>
+  <title>Poliæther Dashboard</title>
   <link rel="stylesheet" href="css/game.css" />
-  <style>
-    body { background: #121212; color: #e0e0e0; font-family: sans-serif; padding: 2rem; }
-    .section { margin-bottom: 2rem; }
-    input, select, button { margin-top: 0.5rem; padding: 0.5rem; font-size: 1rem; }
-    .faction-card { cursor: pointer; opacity: 0.5; pointer-events: none; transition: opacity 0.3s; }
-    .faction-card.enabled { opacity: 1; pointer-events: auto; }
-  </style>
 </head>
 <body>
   <header class="header">
@@ -96,22 +89,103 @@
       </section>
     </div>
 
-    <section id="player-info" class="player-info section" style="display: none;">
-      <h2>Player Status</h2>
-      <p>Name: <span id="player-name">None</span></p>
-      <p>Faction: <span id="player-faction">None</span></p>
-      <div id="reputation-symbols" class="section"></div>
-    </section>
+    <div id="player-info" class="w-full space-y-10" style="display: none;">
+      <!-- Player Status Card -->
+      <section class="relative bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-gray-700">
+        <!-- Home Button in Corner -->
+        <button class="absolute top-4 right-4 bg-cyan-700 hover:bg-cyan-600 p-2 rounded-full transition" title="Home">
+          <i data-lucide="home" class="w-4 h-4 text-white"></i>
+        </button>
+        <div class="flex items-center gap-3 mb-4">
+          <i data-lucide="user-circle" class="text-cyan-400 w-6 h-6"></i>
+          <h2 class="text-2xl font-bold">Player Status</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div><span class="text-gray-400">Name:</span> <strong id="player-name"></strong></div>
+        </div>
+      </section>
 
-    <section id="game-map" class="map-container section" style="display: none;">
-      <h2>World Map</h2>
-      <div class="map" id="map"></div>
+      <!-- Reputation Card -->
+      <section class="bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-gray-700">
+        <div class="flex items-center gap-3 mb-4">
+          <i data-lucide="scale" class="text-gray-400 w-6 h-6"></i>
+          <h2 class="text-2xl font-bold">Faction Reputation</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          <!-- Nullstate -->
+          <div id="nullstate-selection" class="rounded-xl p-4 hover:shadow-lg transition" style="--selected-border: var(--nullstate-border); --selected-bg: var(--nullstate-bg);">
+            <div class="flex items-center justify-center gap-2 text-purple-300">
+              <div class="text-purple-300 text-2xl">∅</div>
+              <span class="text-sm">Nullstate</span>
+            </div>
+            <div id="nullstate-reputation" class="text-xl font-bold mt-1">0</div>
+          </div>
+
+          <!-- Gaia -->
+          <div id="gaia-selection" class="rounded-xl p-4 hover:shadow-lg transition" style="--selected-border: var(--gaia-border); --selected-bg: var(--gaia-bg);">
+            <div class="flex items-center justify-center gap-2 text-green-300">
+              <div class="text-green-300 text-2xl">⛤</div>
+              <span class="text-sm">Gaia</span>
+            </div>
+            <div id="gaia-reputation" class="text-xl font-bold mt-1">0</div>
+          </div>
+
+          <!-- Anarcap -->
+          <div id="anarcap-selection" class="rounded-xl p-4 hover:shadow-lg transition" style="--selected-border: var(--anarcap-border); --selected-bg: var(--anarcap-bg);">
+            <div class="flex items-center justify-center gap-2 text-yellow-300">
+              <div class="text-yellow-300 text-2xl">⛃</div>
+              <span class="text-sm">Anarcap</span>
+            </div>
+            <div id="anarcap-reputation" class="text-xl font-bold mt-1">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Globe -->
+      <section id="game-map" class="map-container section" style="padding: 0rem; display: none;">
+        <div id="globeViz"></div>
+      </section>
+
+      <!-- Marketplace -->
+      <section class="bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-gray-700 section">
+        <div class="flex items-center gap-3 mb-4">
+          <i data-lucide="store" class="text-purple-400 w-6 h-6"></i>
+          <h2 class="text-2xl font-bold">Marketplace</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button class="bg-gray-800 hover:bg-cyan-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+            <i data-lucide="gavel" class="w-5 h-5"></i> Auctions
+          </button>
+          <button class="bg-gray-800 hover:bg-cyan-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+            <i data-lucide="handshake" class="w-5 h-5"></i> Contracts
+          </button>
+          <button class="bg-gray-800 hover:bg-cyan-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+            <i data-lucide="box" class="w-5 h-5"></i> Products
+          </button>
+          <button class="bg-gray-800 hover:bg-cyan-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+            <i data-lucide="package" class="w-5 h-5"></i> Resources
+          </button>
+        </div>
+      </div>
+    </section>
+    <!-- Modal Background -->
+    <section id="marketModal" class="modal fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center hidden z-50 section">
+      <div id="modalContentWrapper" class="bg-gray-800 p-6 rounded-2xl max-w-lg w-full relative">
+        <h3 class="text-xl font-bold mb-4" id="modalTitle">Section</h3>
+        <div id="modalContent" class="text-gray-300 text-sm">
+          Placeholder content.
+        </div>
+      </div>
     </section>
   </main>
   <footer>
     © 2025 Poliæther · All rights reserved
   </footer>
-  <script src="js/game.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="js/game.js"></script>
+
 </body>
 </html>

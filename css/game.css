@@ -4,14 +4,27 @@
   box-sizing: border-box;
 }
 
+:root {
+  --nullstate-border: #7f3aed;
+  --nullstate-bg: linear-gradient(to bottom, #2d2d2d, #7c3aed);
+  --gaia-border: #38c759;
+  --gaia-bg: linear-gradient(to left, #2d2d2d, #34c759);
+  --anarcap-border: #f9c518;
+  --anarcap-bg: linear-gradient(to right, #2d2d2d, #f5c518);
+}
+
 html, body {
   height: 100%;
   margin: 0;
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #0f0f0f;
+  background-color: #121212;
   color: #e0e0e0;
+}
+
+body {
+  padding: 2rem;
 }
 
 .page-wrapper {
@@ -413,6 +426,11 @@ label {
   pointer-events: auto;
 }
 
+.selected {
+  border: 2px solid var(--selected-border);
+  background: var(--selected-bg);
+}
+
 /* Faction icon placeholders */
 .icon {
   width: 80px;
@@ -496,6 +514,26 @@ label {
   display: none;
 }
 
+.section { margin-bottom: 2rem; }
+    
+input, select, button {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.faction-card {
+  cursor: pointer;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s;
+
+}
+.faction-card.enabled {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 footer {
   background: #222;
   color: white;
@@ -573,4 +611,47 @@ footer {
 
 .wallet-button:hover {
   background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+/* Base Color Classes */
+.rep-red { color: #ff5555; }
+.rep-neutral { color: #dddddd; }
+.rep-blue { color: #59bfff; }
+.rep-green { color: #38c759; }
+
+/* BURNING RED */
+.rep-burning-red {
+  color: #ff3c3c;
+  text-shadow: 0 0 4px #ff6a00, 0 0 8px #ff2e2e;
+  animation: flicker 1s infinite alternate;
+}
+
+@keyframes flicker {
+  0% { text-shadow: 0 0 3px #ff0000, 0 0 7px #ff8c00; opacity: 0.95; }
+  50% { text-shadow: 0 0 5px #ff4500, 0 0 10px #ffa500; opacity: 0.85; }
+  100% { text-shadow: 0 0 4px #ff0000, 0 0 8px #ff6a00; opacity: 1; }
+}
+
+/* ELECTRIFIED GREEN */
+.rep-electric-green {
+  color: #80ff80;
+  text-shadow: 0 0 6px #00ff00, 0 0 12px #66ff66;
+  animation: zap 1.5s infinite ease-in-out;
+}
+
+@keyframes zap {
+  0% { text-shadow: 0 0 5px #00ff00, 0 0 10px #66ff66; transform: scale(1); }
+  50% { text-shadow: 0 0 10px #00ff00, 0 0 18px #80ff80; transform: scale(1.05); }
+  100% { text-shadow: 0 0 5px #00ff00, 0 0 10px #66ff66; transform: scale(1); }
+}
+
+#globeViz {
+  width: 100%;    /* or 100%, or whatever */
+  height: 100%;
+  position: relative;  /* needed for proper canvas sizing */
+}
+
+#globeViz canvas {
+border-radius: 1rem; /* or 50% for a circle */
+overflow: hidden;
 }
