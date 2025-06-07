@@ -1,25 +1,7 @@
 import { initGlobe, focusOnFaction, resizeCanvas } from './globe.js';
 
-const factionsData = {
-  gaia: {
-    name: "Gaia",
-    description: "Post-growth liquid anarchist collective",
-    extra: "Gaia focuses on ecological balance, community governance, and sustainable living beyond endless growth models."
-  },
-  anarcap: {
-    name: "Anarcap",
-    description: "Liquid anarcho-capitalist frontier society",
-    extra: "Anarcap champions voluntary exchange, private property rights, and decentralized markets without traditional governments."
-  },
-  nullstate: {
-    name: "Nullstate",
-    description: "Crypto-anarchist decentralized enclave",
-    extra: "Nullstate leverages cryptographic privacy, decentralized protocols, and anonymity to build a stateless digital frontier."
-  }
-};
-
 // Opt for development or production API
-const apiBase = (
+window.apiBase = (
   window.location.hostname === 'localhost' ||
   window.location.hostname === '127.0.0.1' ||
   window.location.hostname === ''
@@ -45,6 +27,7 @@ function showWalletWarning() {
   document.body.style.background = "radial-gradient(circle at center, #1f1f1f, #0e0e0e)";
   document.querySelector('footer').style.background = 'none';
   document.getElementById("wallet-warning-section").style.display = "flex";
+  hideLoader();
 }
 
 function switchToRegister() {
@@ -65,6 +48,14 @@ function showAuthBox() {
 function hideAuthBox() {
   document.getElementById('auth-status').innerText = '';
   document.getElementById("auth-section").classList.add("hidden");
+}
+
+function showSigning() {
+  document.getElementById("login_message").style.display = "inline-block";
+}
+
+function hideSigning() {
+  document.getElementById("login_message").style.display = "inline-block";
 }
 
 function hideLoader() {
@@ -107,9 +98,7 @@ function closeModal() {
 }
 
 function applyReputationColor(el, value) {
-  //const el = document.getElementById(id);
   if (!el) return;
-
   // Remove previous rep classes
   el.classList.remove(
     'rep-burning-red',
@@ -119,7 +108,6 @@ function applyReputationColor(el, value) {
     'rep-green',
     'rep-electric-green'
   );
-
   // Apply appropriate class
   if (value <= -100) {
     el.classList.add('rep-burning-red');
@@ -317,8 +305,8 @@ async function createPlayer(faction) {
       }
 
       const data = await res.json();
-      const player = data.player;
-      populatePlayer(player);
+      window.user.player = data.player;
+      populatePlayer(data.player);
     } catch (err) {
       console.error(err);
       alert("Failed to contact server.");
@@ -333,6 +321,7 @@ async function connectWallet() {
   }
   const accounts = await window.unisat.requestAccounts();
   const address = accounts[0];
+  showSigning();
   return address;
 }
 
@@ -343,12 +332,24 @@ async function loginWithBitcoin() {
   const res = await fetch(`${apiBase}/auth/nonce/${address}`);
   if (!res.ok) {
     const err = await res.json();
-    alert((err.detail || res.statusText));
+    document.getElementById("login_message").innerHTML = res.statusText || "Failed to get signing message";
     return;
 
   }
   const message = await res.json();
-  const signature = await window.unisat.signMessage(message);
+  let signature
+  try {
+    signature = await window.unisat.signMessage(message);
+  } catch (err) {
+    const reply = "Please refresh and try again";
+    if (err.code === 4001) {
+      document.getElementById("login_message").innerHTML = `Signature request rejected<br>${reply}`;
+    } else {
+      document.getElementById("login_message").innerHTML = `Unexpected error during signing: ${err}<br>${reply}`;
+    }
+    return;
+  }
+  document.getElementById("login_message").innerHTML = `Message signed successfully`;
   // Send signed login request
   const loginRes = await fetch(`${apiBase}/auth/verify`, {
     method: "POST",
@@ -361,11 +362,10 @@ async function loginWithBitcoin() {
     return data;
   } else {
     const err = await loginRes.json();
-    document.getElementById('auth-status').innerText = err.detail || "Login failed";
+    document.getElementById("login_message").innerHTML = err.detail || "Login failed";
   }
 }
 
-// Optionally, validate with backend
 async function validateToken() {
   const token = localStorage.getItem('token');
   const res = await fetch(`${apiBase}/me`, {
@@ -389,6 +389,13 @@ async function initApp() {
   if (!online) {
     return;
   }
+
+  // Get game configuration
+  fetch(`${window.apiBase}/config`)
+    .then(res => res.json())
+    .then(config => {
+      window.factions = config.factions;
+    });
 
   // Faction select
   factionCards.forEach(card => card.classList.add('enabled'));
@@ -446,14 +453,17 @@ async function initApp() {
     }
   });
 
-  let data = await validateToken();
+  //triggers();
+  window.user = await validateToken();
   lucide.createIcons();
   let world = await initGlobe();
   window.addEventListener('resize', resizeCanvas);
-  isPlayerCreated(data);
-  showMain();
-  hideLoader();
-  resizeCanvas();
+  if (window.user) {
+    isPlayerCreated(window.user);
+    showMain();
+    resizeCanvas();
+    hideLoader();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
