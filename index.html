@@ -15,29 +15,29 @@
   <div id="loader">
     <div class="loading-content">
       <div class="spinner"></div>
-      <div id="login_message" class="loading-message">
+      <div id="login_message" class="loading-message hidden">
         <span class="loading-light">Waiting for signed message</span><span class="dots"></span>
       </div>
     </div>
   </div>
   <!-- Offline Modal -->
-  <section id="offline-section">
+  <section id="offline-section" class="hidden">
     <div class="offline-content">
       <h2><strong>Offline Mode</strong></h2>
       <p>The Poliæther servers are currently unavailable. Please try again later.</p>
     </div>
   </section>
   <!-- Missing Wallet Plugin Modal -->
-  <section id="wallet-warning-section" class="wallet-warning">
+  <section id="wallet-warning-section" class="wallet-warning hidden">
     <div class="wallet-card">
       <h2>Wallet Plugin Required</h2>
       <p>To continue, please install a compatible Bitcoin wallet browser extension.</p>
       <a href="https://unisat.io/" target="_blank" class="wallet-button">Get Unisat</a>
     </div>
   </section>
-  <main id="main" class="main container content">
+  <main id="main" class="main container content hidden">
     <!-- Login/Register Modal -->
-    <section id= "auth-section" class="auth-overlay">
+    <section id= "auth-section" class="auth-overlay hidden">
       <div class="auth-box">
         <img src="assets/logo_background.png" alt="Auth Icon" class="auth-icon" />
         <h2 id="auth-title">Login</h2>
@@ -67,7 +67,7 @@
     </section>
 
     <!-- Choose your faction -->
-    <div id="faction-select">
+    <div id="faction-select" class="hidden">
       <h2 class="choose-faction-title">Choose Your Faction</h2>
       <section class="factions" aria-label="Factions in Poliaether world">
         <article class="faction-card gaia" data-faction="Gaia" tabindex="0" aria-describedby="desc-gaia">
@@ -182,6 +182,197 @@
         </div>
       </div>
     </section>
+
+<!-- Land Tile Modal -->
+<div id="landTileModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-60">
+  <section class="bg-gray-900/90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-gray-700 w-full max-w-2xl overflow-y-auto max-h-[80vh] custom-scrollbar">
+
+    <!-- Header -->
+    <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-400">
+      <div class="text-4xl font-extrabold" id="faction-icon">🌐</div>
+      <div>
+        <h2 id="region-name" class="text-2xl font-bold text-white tracking-wide uppercase">Unknown Region</h2>
+        <p id="region-faction-name" class="text-sm text-yellow-300 italic">Unowned</p>
+      </div>
+      <div id="region-consensus" class="ml-auto text-xs bg-gray-700 text-white py-1 px-3 rounded-full border border-white shadow-inner uppercase tracking-widest">
+        Consensus
+      </div>
+    </div>
+
+    <!-- Optional Alerts -->
+    <div class="mt-4 mb-4">
+      <div class="bg-red-500/10 border border-red-400/30 text-red-300 text-sm rounded-lg p-3 flex items-start gap-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5"></i>
+        This region is under embargo. Actions may be limited.
+      </div>
+    </div>
+
+    <!-- Tile Status Overview -->
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-200">
+      <!-- Infrastructure -->
+      <button class="bg-gray-800 hover:bg-emerald-800 transition bg-gray-800/70 rounded-xl p-4 border border-gray-700">
+        <div class="flex items-center gap-2 mb-2">
+          <i data-lucide="landmark" class="text-blue-400 w-5 h-5"></i>
+          <h3 class="font-semibold text-sm">Infrastructure</h3>
+        </div>
+        <p class="text-xl font-bold text-white" id="tile-infra-level">Moderate</p>
+      </button>
+
+      <!-- Defense -->
+      <button class="bg-gray-800 hover:bg-emerald-800 transition bg-gray-800/70 rounded-xl p-4 border border-gray-700">
+        <div class="flex items-center gap-2 mb-2">
+          <i data-lucide="shield-check" class="text-red-400 w-5 h-5"></i>
+          <h3 class="font-semibold text-sm">Defense</h3>
+        </div>
+        <p class="text-xl font-bold text-white" id="tile-defense-level">Low</p>
+      </button>
+
+      <!-- Occupation -->
+      <button class="bg-gray-800 hover:bg-emerald-800 transition bg-gray-800/70 rounded-xl p-4 border border-gray-700">
+        <div class="flex items-center gap-2 mb-2">
+          <i data-lucide="target" class="text-yellow-400 w-5 h-5"></i>
+          <h3 class="font-semibold text-sm">Occupation</h3>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+          <div id="tile-occupation-fill" class="bg-yellow-400 h-full w-[68%]"></div>
+        </div>
+        <p class="text-sm mt-1 text-right">68% occupied</p>
+      </button>
+    </div>
+
+    <!-- Optional Faction Influence -->
+    <div class="mt-6 md-4">
+      <h4 class="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+        <i data-lucide="users" class="w-4 h-4 text-purple-400"></i> Faction Influence
+      </h4>
+      <div class="flex h-3 overflow-hidden rounded-full bg-gray-700 border border-gray-600 cursor-default" role="list" aria-label="Faction influence">
+        <div class="bg-cyan-400 w-[40%]" title="Nullstate" role="listitem" aria-label="Nullstate faction influence"></div>
+        <div class="bg-pink-500 w-[35%]" title="Gaia" role="listitem" aria-label="Gaia faction influence"></div>
+        <div class="bg-yellow-300 w-[25%]" title="Anarcap" role="listitem" aria-label="Anarcap faction influence"></div>
+      </div>
+    </div>
+
+    <!-- Local Stability -->
+    <div class="md:col-span-2 mt-4">
+      <p class="text-gray-400 text-sm mb-1 flex items-center gap-1">
+        <i data-lucide="activity" class="w-4 h-4"></i> Local Stability
+      </p>
+      <div class="w-full bg-gray-800 rounded-full h-3">
+        <div id="tile-stability" class="bg-red-500 h-3 rounded-full transition-all duration-300" style="width: 70%;"></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+      <button class="bg-gray-800 hover:bg-emerald-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+        <i data-lucide="castle" class="w-5 h-5"></i> Citadel
+      </button>
+      <button class="bg-gray-800 hover:bg-emerald-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+        <i data-lucide="scroll" class="w-5 h-5"></i> Council
+      </button>
+      <button class="bg-gray-800 hover:bg-emerald-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+        <i data-lucide="chart-candlestick" class="w-5 h-5"></i> Invest
+      </button>
+      <button class="bg-gray-800 hover:bg-emerald-800 text-white font-semibold py-2 px-4 rounded-xl flex flex-col items-center gap-1 transition">
+        <i data-lucide="map-pin" class="w-5 h-5"></i> Travel
+      </button>
+    </div>
+
+    <!-- Tax Rate (Faction Controlled) -->
+    <div class="mt-6">
+      <h4 class="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+        <i data-lucide="brain-circuit" class="w-4 h-4 text-green-400"></i>
+        Policies
+      </h4>
+
+      <!-- Tax Section with Click-to-Toggle -->
+      <details id="region_tax" class="group w-full rounded-lg bg-gray-800 border border-gray-700">
+        <summary class="flex items-center justify-between text-sm text-gray-300 px-4 py-2 cursor-pointer select-none">
+          <div class="flex items-center gap-2">
+            <i data-lucide="hand-coins" class="w-4 h-4 text-red-300"></i>
+            <span class="font-medium">Current Tax:</span>
+            <span class="text-white font-bold" id="tile-tax-rate">27%</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-400 italic">
+            <span>Faction:</span>
+            <span class="text-yellow-300" id="region-taxing-faction">Anarcap</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-500 ease-in-out group-open:rotate-180"></i>
+          </div>
+        </summary>
+
+        <div class="text-gray-300 text-xs px-4 py-3 rounded-b-lg border-t border-gray-700 space-y-2">
+          <div class="text-white font-semibold text-sm">Tax Breakdown</div>
+          <div class="flex justify-between">
+            <span class="text-red-400">Regional Base</span>
+            <span>9%</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-orange-300">Faction Tax</span>
+            <span>18%</span>
+          </div>
+          <hr class="border-gray-700 my-2">
+          <div class="flex justify-between font-semibold text-white">
+            <span>Total</span>
+            <span>27%</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- Custom policies -->
+      <div id="policies-container"></div>
+    </div>
+
+    <!-- Optional Resource Yield -->
+    <div class="mt-6">
+      <h4 class="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+        <i data-lucide="boxes" class="w-4 h-4 text-emerald-400"></i> Resources
+      </h4>
+      <div class="flex flex-wrap gap-3">
+        <span class="bg-gray-800 px-3 py-1 rounded-full text-sm text-white border border-gray-700">Iron x12</span>
+        <span class="bg-gray-800 px-3 py-1 rounded-full text-sm text-white border border-gray-700">Silicon x8</span>
+        <span class="bg-gray-800 px-3 py-1 rounded-full text-sm text-white border border-gray-700">Energy x4</span>
+      </div>
+    </div>
+
+    <!-- Optional Population -->
+    <div class="mt-6 flex items-center gap-2 text-sm text-gray-400 mb-4">
+      <i data-lucide="users-round" class="w-4 h-4 text-teal-300"></i>
+      Estimated Population: <span class="text-white ml-1 font-medium">3.2M</span>
+    </div>
+
+    <!-- Custom Event Icons -->
+    <div class="mb-6">
+      <h3 class="text-white font-semibold mb-2">Recent Events</h3>
+      <div class="flex gap-4 text-gray-300">
+        <div class="flex flex-col items-center gap-1">
+          <i data-lucide="swords" class="w-6 h-6"></i>
+          <span class="text-xs">War</span>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <i data-lucide="handshake" class="w-6 h-6"></i>
+          <span class="text-xs">Treaty</span>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <i data-lucide="brick-wall-fire" class="w-6 h-6"></i>
+          <span class="text-xs">Revolt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historic Owner Log -->
+    <div class="mb-6">
+      <h3 class="text-white font-semibold mb-2">Historic Owners</h3>
+      <ul id="owner-log" class="list-disc list-inside max-h-24 overflow-y-auto text-gray-300 text-sm">
+        <li>Faction Alpha (2020-2022)</li>
+        <li>Faction Beta (2018-2020)</li>
+        <li>Neutral (Before 2018)</li>
+      </ul>
+    </div>
+
+  </section>
+</div>
+
+
   </main>
   <footer>
     © 2025 Poliæther · All rights reserved

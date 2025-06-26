@@ -1,11 +1,13 @@
 // for missions/wars https://globe.gl/example/random-rings/
 // https://github.com/vasturiano/globe.gl/blob/master/example/random-rings/index.html
 
-import { TextureLoader, ShaderMaterial, Vector2, SphereGeometry, MathUtils, MeshPhongMaterial, Mesh  } from 'https://esm.sh/three';
+import { DoubleSide, TextureLoader, ShaderMaterial, Vector2, SphereGeometry, MathUtils, MeshPhongMaterial, Mesh, MeshBasicMaterial } from 'https://esm.sh/three';
 import * as solar from 'https://esm.sh/solar-calculator';
 import { scaleSequentialSqrt } from 'https://esm.sh/d3-scale';
 import { interpolateYlOrRd } from 'https://esm.sh/d3-scale-chromatic';
 import * as turf from 'https://cdn.skypack.dev/@turf/turf';
+
+let factionAltitude = 1.0;
 
 export async function initGlobe() {
   const VELOCITY = 1; // minutes per frame
@@ -81,107 +83,164 @@ export async function initGlobe() {
   window.world = new Globe(container)
     .globeImageUrl('assets/images/equirectangular_earth_day_BM.jpg')
     //.backgroundImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png')
-    .polygonSideColor(() => 'rgba(80, 80, 80, 0.3)')
-    .polygonStrokeColor(() => '#333')
     .lineHoverPrecision(0)
     .polygonsTransitionDuration(300)
-    .onPolygonClick(clicked => {
-      //const [lng, lat] = clicked.properties.centroid || [0, 0];
-      //world.pointOfView({ lat, lng, altitude: 1.2 }, 1000);
-    });
-
-const capitalColors = {}; // Will be populated dynamically
 
 // First, fetch faction data from your FastAPI backend
-fetch(`${window.apiBase}/map`)
-  .then(res => res.json())
-  .then(factionData => {
-    // Populate capitalColors mapping by ISO code
-    factionData.forEach(entry => {
-      capitalColors[entry.iso] = {
-        faction: entry.faction,
-        color: window.factions[entry.faction].color || 'rgba(150, 150, 150, 0.6)' // fallback color
-      };
-    });
-    return fetch('/datasets/ne_110m_admin_0_countries.geojson');
+fetch(`${window.apiBase}/map`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
   })
   .then(res => res.json())
-  .then(data => {
-    function hexToRgba(hex, alpha) {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
+  .then(factionData => {
+    return fetch('/datasets/custom_countries_lr-geojsonmapskyd.geojson')
+      .then(res => res.json())
+      .then(data => {
+        // Merge faction data into GeoJSON features
+        data.features.forEach(feature => {
+          const iso = feature.properties.adm0_a3;
+          const match = factionData.find(f => f.iso === iso);
+          if (match) {
+            const factionName = match.faction?.name || null;
+            feature.properties.faction = factionName;
+            feature.properties.policies = [...match.policies, ...match.faction?.key_policies || []];
+            feature.properties.factionColor = window.factions[factionName]?.color || '#969696';
+          }
+        });
 
-    const features = data.features;
-    const baseAltitude = 0.001;
-    const boostedAltitude = 0.01;
-    const hoverAltitude = 0.02;
-
-    world
-      .polygonsData(features)
-      .polygonCapColor(d => {
-        const iso = d.properties.ISO_A3;
-        const entry = capitalColors[iso];
-        return entry ? hexToRgba(entry.color, 0.5) : 'rgba(150, 150, 150, 0.2)';
-      })
-      .polygonSideColor(() => 'rgba(80, 80, 80, 0.2)')
-      .polygonStrokeColor(() => 'transparent') //'#333')
-      .polygonAltitude(feat => {
-        const iso = feat.properties.ISO_A3;
-        return capitalColors[iso] ? boostedAltitude : baseAltitude;
-      })
-      .polygonLabel(d => {
-        const iso = d.properties.ISO_A3;
-        return capitalColors[iso]
-          ? `<b><center>${d.properties.NAME}</center>Owned by: ${capitalColors[iso].faction}</b>`
-          : `<b>${d.properties.NAME}</b>`;
-      })
-      .onPolygonHover(hoverD =>
-        world
-          .polygonAltitude(d => {
-            const iso = d.properties.ISO_A3;
-            if (d === hoverD) {
-              return hoverAltitude;
-            }
-            return capitalColors[iso] ? boostedAltitude : baseAltitude;
-          })
-          .polygonCapColor(d => {
-            const iso = d.properties.ISO_A3;
-            const entry = capitalColors[iso];
-            if (d === hoverD) {
-              return entry
-                ? hexToRgba(entry.color, 0.7) // solid color on hover
-                : 'rgba(0, 0, 0, 0.6)';
-            }
-            return entry
-              ? hexToRgba(entry.color, 0.3)
-              : 'rgba(150, 150, 150, 0.2)';
-          })
-      )
-      .onPolygonClick(clicked => {
-        const centroid = turf.centroid(clicked);
-        const [lng, lat] = centroid.geometry.coordinates;
-        world.pointOfView({ lat, lng, altitude: 1.2 }, 1000);
-      });
-    // Focus on faction trigger
-    let elem = document.getElementById("game-map")
-    let animationStarted = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const globeEntry = entries[0];
-        if (globeEntry.isIntersecting && !animationStarted) {
-          animationStarted = true;
-          focusOnFaction(world, data); // make sure `world` is in scope here
+        function hexToRgba(hex, alpha) {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
-      },
-      {
-        root: null, // viewport
-        threshold: 0.6 // 60% of the globe section must be visible
-      }
-    );
-    if (elem) observer.observe(elem);
+
+        const allowedCountries = new Set(factionData.map(c => c.iso));
+        const baseAltitude = 0.001;
+        const boostedAltitude = 0.015;
+        const hoverAltitude = 0.02;
+        let prevPolygon = null;
+
+        world
+          .polygonsData(data.features)
+          .polygonCapColor(d => {
+            const color = d.properties.factionColor;
+            return color ? hexToRgba(color, 0.5) : 'rgba(150, 150, 150, 0.2)';
+          })
+          .polygonSideColor(() => 'rgba(80, 80, 80, 0.2)')
+          .polygonStrokeColor(d => {
+                const color = d.properties.factionColor;
+                return color
+                  ? hexToRgba(color, 0.3)
+                  : 'rgba(150, 150, 150, 0.2)';
+              })
+          .polygonAltitude(d => d.properties.faction ? boostedAltitude : baseAltitude)
+          .polygonLabel(d =>
+            d.properties.faction
+              ? `<b><center>${d.properties.name}</center>Owned by: ${d.properties.faction}</b>`
+              : `<b>${d.properties.name}</b>`
+          )
+          .onPolygonClick(clicked => {
+            const iso = clicked.properties.adm0_a3;
+            if (allowedCountries.has(iso)) {
+              const centroid = turf.centroid(clicked);
+              const [lng, lat] = centroid.geometry.coordinates;
+              world.pointOfView({ lat, lng, altitude: factionAltitude }, 1000);
+              const owner = clicked.properties.faction;
+              showCountryLandUI(owner, clicked.properties.name, clicked);
+            }
+          })
+          .onPolygonHover(polygon => {
+            // Clear all custom materials first
+            world.polygonsData().forEach(p => delete p.__customMaterial);
+
+            const isHovering = !!polygon;
+            const iso = polygon?.properties?.adm0_a3;
+            const iso2 = polygon?.properties?.iso_a2?.toLowerCase();
+            const hasNoFaction = polygon?.properties?.faction === 'None';
+            const factionColor = polygon?.properties?.factionColor;
+
+            // Handle hover with valid target (gets nation flags for neighbours)
+            // if (isHovering && allowedCountries.has(iso) && hasNoFaction) {
+            //   const flagUrl = `https://flagcdn.com/${iso2}.svg`;
+            //   new TextureLoader().load(flagUrl, texture => {
+            //     polygon.__customMaterial = new MeshBasicMaterial({
+            //       map: texture,
+            //       transparent: true,
+            //       opacity: 0.55,
+            //       depthTest: false,
+            //       side: DoubleSide
+            //     });
+            //     world.polygonCapMaterial(p =>
+            //       p.__customMaterial || defaultMaterial(p.properties.factionColor)
+            //     );
+            //   });
+            // }
+
+            // Update previous polygon tracker
+            prevPolygon = isHovering ? polygon : null;
+
+            // Altitude logic
+            world
+              .polygonAltitude(d =>
+                d === polygon
+                  ? hoverAltitude
+                  : d.properties.faction
+                    ? boostedAltitude
+                    : baseAltitude
+              )
+
+              // Cap color logic
+              .polygonCapColor(d => {
+                const color = d.properties.factionColor;
+                if (d === polygon) {
+                  return color || 'rgb(0, 0, 0)'; // fallback black for hover
+                }
+                return color || 'rgb(150, 150, 150)'; // fallback gray
+              })
+
+              // Set cap material with correct opacity
+              .polygonCapMaterial(d => {
+                const iso = d.properties.adm0_a3;
+                const hasNoFaction = d.properties.faction === 'None';
+                const color = d.properties.factionColor || '#969696'; // fallback gray
+                if (d === polygon && allowedCountries.has(iso)) {
+                  return new MeshBasicMaterial({
+                    color: color || 'rgb(0, 0, 0)',
+                    transparent: true,
+                    opacity: color ? 0.75 : 1,
+                    depthTest: true,
+                    side: DoubleSide
+                  });
+                }
+                return d.__customMaterial || defaultMaterial(d.properties.factionColor)
+              });
+          });
+
+          function defaultMaterial(color) {
+            return new MeshBasicMaterial({
+              color: color || 'rgb(0, 0, 0)',
+              transparent: true,
+              opacity: color ? 0.5 : 0.6,
+              depthTest: true,
+              side: DoubleSide
+            });
+          }
+
+        // Focus on faction when globe is visible
+        const elem = document.getElementById("game-map");
+        let animationStarted = false;
+        const observer = new IntersectionObserver(entries => {
+          const globeEntry = entries[0];
+          if (globeEntry.isIntersecting && !animationStarted) {
+            animationStarted = true;
+            focusOnFaction(world, data); // world must be in scope
+          }
+        }, { threshold: 0.6 });
+
+        if (elem) observer.observe(elem);
+      });
   });
 
   // Load sphere textures
@@ -250,18 +309,13 @@ fetch(`${window.apiBase}/map`)
 export function focusOnFaction(world, geoJsonData) {
   // Find the country feature by ISO
   const countryFeature = geoJsonData.features.find(
-    feat => feat.properties.ISO_A3 === window.user.player.location
+    feat => feat.properties.adm0_a3 === window.user.player.location
   );
-
-  if (!countryFeature) {
-    console.warn('No feature found in GeoJSON for ISO:', isoCode);
-    return;
-  }
 
   // Get the centroid using Turf.js
   const centroid = turf.centroid(countryFeature);
   const [lng, lat] = centroid.geometry.coordinates;
-  const targetAltitude = 1.2;
+  const targetAltitude = factionAltitude;
 
   // Animate rotation (optional)
   const controls = world.controls();
@@ -277,7 +331,7 @@ export function focusOnFaction(world, geoJsonData) {
 
       if (angle > Math.PI / 2) {
         focusReached = true;
-        world.pointOfView({ lat, lng, altitude: targetAltitude }, 4000);
+        world.pointOfView({ lat, lng, altitude: targetAltitude }, 3000);
       } else {
         requestAnimationFrame(animateRotation);
       }
@@ -291,4 +345,42 @@ export function focusOnFaction(world, geoJsonData) {
 export function resizeCanvas() {
   const { clientWidth, clientHeight } = container;
   world.width(clientWidth).height(clientHeight);
+}
+
+function showCountryLandUI(owner, region, feature) {
+  const color = window.factions[owner]?.color ?? "#999999";
+  const elConsensus = document.getElementById("region-consensus");
+  const elIcon = document.getElementById("faction-icon");
+  const elFaction = document.getElementById('region-taxing-faction');
+  elFaction.textContent = owner || 'no one';
+  elFaction.style.color = color;
+  document.getElementById('region-name').textContent = region;
+  elIcon.textContent = window.factions[owner]?.symbol ?? "🌐";
+  elIcon.style.color = color;
+  if (owner) {
+    elConsensus.textContent = "CONSENSUS";
+    elConsensus.classList.add("bg-green-700");
+    elConsensus.classList.remove("animate-pulse");
+    document.getElementById('region-faction-name').textContent = owner;
+  } else {
+    elConsensus.textContent = "DISSENSUS";
+    elConsensus.classList.remove("bg-green-700");
+    elConsensus.classList.add("animate-pulse");
+    document.getElementById('region-faction-name').textContent = "";
+
+  }
+  document.getElementById('region-faction-name').style.color = color;
+  document.getElementById('landTileModal').classList.remove('hidden');
+
+  // Hide unused policies
+  document.querySelectorAll("#policies-container > *").forEach(elem => {
+    const id = elem.id;
+    const isInAllowed = feature.properties.policies.includes(id);
+    if (isInAllowed) {
+      elem.classList.remove("hidden");
+    } else {
+      elem.classList.add("hidden");
+    }
+  });
+
 }

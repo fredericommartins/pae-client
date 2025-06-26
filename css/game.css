@@ -98,8 +98,8 @@ header.header {
   color: #888;
 }
 
-#main {
-  display: none;
+.hidden {
+  display: none !important;
 }
 
 .main {
@@ -284,7 +284,6 @@ label {
   color: #fff;
   text-align: center;
   padding: 2rem;
-  display: none;
 }
 
 .loading-light {
@@ -327,8 +326,33 @@ label {
   100% { content: ''; }   
 }
 
-#auth-section {
-  display: none;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937; /* Tailwind gray-800 */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* Tailwind gray-600 */
+  border-radius: 10px;
+  border: 2px solid #1f2937; /* Match track bg */
+}
+
+/* Firefox support */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+.breathe {
+  animation: breathe 3s ease-in-out infinite;
 }
 
 .auth-overlay {
@@ -367,10 +391,6 @@ label {
 }
 
 #register-btn {
-  display: none;
-}
-
-#faction-select {
   display: none;
 }
 
@@ -540,7 +560,6 @@ label {
   align-items: center;
   padding: 2rem;
   text-align:center;
-  display: none;
 }
 
 .section { margin-bottom: 2rem; }
@@ -561,13 +580,13 @@ input, select, button {
 }
 
 .wallet-warning {
+  display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
   color: #f0f0f0;
   font-family: 'Inter', sans-serif;
   padding: 2rem;
-  display: none;
 }
 
 .wallet-card {
@@ -648,4 +667,33 @@ input, select, button {
 #globeViz canvas {
   border-radius: 1rem; /* or 50% for a circle */
   overflow: hidden;
+}
+
+#country-land-panel {
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  background: rgba(255,255,255,0.95);
+  padding: 1em;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #0003;
+  z-index: 1000;
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 40px);
+  gap: 5px;
+  margin-top: 1em;
+}
+
+.land-tile {
+  width: 40px;
+  height: 40px;
+  background: #cfc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #999;
+  cursor: pointer;
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Globe.gl Country Pins Example</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #globeViz { width: 100vw; height: 100vh; display: block; }
+  </style>
+</head>
+<body>
+  <div id="globeViz"></div>
+
+  <!-- Include Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <!-- Include Globe.gl -->
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+
+  <script>
+    // Map ISO3 to approximate lat/lng centers
+    const isoToCoords = {
+      USA: [38, -97],         // USA center approx
+      FRA: [46.2276, 2.2137], // France
+      CHN: [35.8617, 104.1954]// China
+    };
+
+    // Convert lat/lng to 3D vector on unit sphere + altitude offset
+    function latLngToVec3(lat, lng, radius = 1, altitude = 0.02) {
+      const phi = (90 - lat) * Math.PI / 180;
+      const theta = (lng + 180) * Math.PI / 180;
+      const r = radius + altitude;
+      return new THREE.Vector3(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.cos(phi),
+        r * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    // Add pin mesh at country center
+    function addCountryPin(world, isoCode, color = 'red') {
+      const coords = isoToCoords[isoCode];
+      if (!coords) {
+        console.warn('No coordinates for ISO code:', isoCode);
+        return;
+      }
+      const [lat, lng] = coords;
+      const pos = latLngToVec3(lat, lng);
+
+      const coneGeom = new THREE.ConeGeometry(0.02, 0.06, 8);
+      const coneMat = new THREE.MeshStandardMaterial({ color });
+      const pin = new THREE.Mesh(coneGeom, coneMat);
+
+      pin.position.copy(pos);
+      pin.lookAt(new THREE.Vector3(0, 0, 0)); // Point cone inward
+
+      world.scene().add(pin);
+    }
+
+    function initGlobe() {
+      const world = Globe()
+  .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+  .showAtmosphere(true);
+
+const container = document.getElementById('globeViz');
+container.appendChild(world()); // append the globe's canvas element here
+
+
+      // Add ambient light so pins are visible
+      world.scene().add(new THREE.AmbientLight(0xffffff, 1.2));
+
+      // Add pins for USA, France, China
+      addCountryPin(world, 'USA', 'blue');
+      addCountryPin(world, 'FRA', 'green');
+      addCountryPin(world, 'CHN', 'red');
+
+      return world;
+    }
+
+    window.onload = () => {
+      initGlobe();
+    };
+  </script>
+</body>
+</html>

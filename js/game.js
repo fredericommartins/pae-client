@@ -12,62 +12,72 @@ window.apiBase = (
 // add here production URl in case local connection is not available
 const nationalitySelect = document.getElementById('nationalitySelect');
 const genderSelect = document.getElementById('genderSelect');
-const factionCards = document.querySelectorAll('.faction-card');
 
 // Visual functions
 function showOfflinePage() {
-  document.querySelector("main").style.display = "none";
+  document.querySelector("main").classList.add("hidden");
   document.body.style.background = "radial-gradient(circle at center, #1f1f1f, #0e0e0e)";
   document.querySelector('footer').style.background = 'none';
-  document.getElementById("offline-section").style.display = "flex";
+  document.getElementById("offline-section").classList.remove("hidden");
 }
 
 function showWalletWarning() {
-  document.querySelector("main").style.display = "none";
+  document.querySelector("main").classList.add("hidden");
   document.body.style.background = "radial-gradient(circle at center, #1f1f1f, #0e0e0e)";
   document.querySelector('footer').style.background = 'none';
-  document.getElementById("wallet-warning-section").style.display = "flex";
+  document.getElementById("wallet-warning-section").classList.remove("hidden");
   hideLoader();
 }
 
-function switchToRegister() {
-  fetchNationalities();
-  fetchGenders();
-  document.getElementById("auth-title").textContent = "Register";
-  document.getElementById("extra-fields").style.display = "block";
-  document.getElementById("login-btn").style.display = "none";
-  document.getElementById("register-btn").style.display = "inline-block";
-  document.getElementById("switch-to-register-btn").style.display = "none";
-}
-
-function showAuthBox() {
-  document.getElementById('auth-section').style.display = 'flex';
-  document.getElementById("auth-section").classList.remove("hidden");
-}
-
-function hideAuthBox() {
-  document.getElementById('auth-status').innerText = '';
-  document.getElementById("auth-section").classList.add("hidden");
-}
-
 function showSigning() {
-  document.getElementById("login_message").style.display = "inline-block";
-}
-
-function hideSigning() {
-  document.getElementById("login_message").style.display = "inline-block";
+  document.getElementById("login_message").classList.remove("hidden");
 }
 
 function hideLoader() {
-  document.getElementById("loader").style.display = "none";
+  document.getElementById("loader").classList.add("hidden");
 }
 
 function hideFactionSelect() {
-  document.getElementById("faction-select").style.display = "none";
+  document.getElementById("faction-select").classList.add("hidden");
 }
 
 function showFactionSelect() {
-  document.getElementById("faction-select").style.display = "block";
+  showMain();
+  hideLoader();
+  return new Promise((resolve) => {
+    const container = document.getElementById("faction-select");
+    container.classList.remove("hidden");
+    document.querySelectorAll(".faction-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const selectedFaction = card.getAttribute("data-faction");
+        container.classList.add("hidden");
+        resolve(selectedFaction);
+      }, { once: true }); // Make sure it only triggers once
+    });
+  });
+}
+
+function waitForFactionSelection() {
+  return new Promise((resolve) => {
+    const factionCards = document.querySelectorAll('.faction-card');
+    factionCards.forEach(card => card.classList.add('enabled'));
+    factionCards.forEach(card => {
+      card.addEventListener('click', async () => {
+        if (!card.classList.contains('enabled')) return;
+        const confirmed = await confirmDialog({
+          title: "Are you sure?",
+          text: "Changing factions later is no easy feat",
+          confirmButtonText: "Join",
+          cancelButtonText: "Choose another"
+        });
+        if (confirmed) {
+          document.getElementById('faction-select').classList.add('hidden');
+          const player = await createPlayer(card.getAttribute('data-faction'));
+          resolve(player);
+        }
+      });
+    });
+  });
 }
 
 function showPlayerInfo() {
@@ -80,7 +90,7 @@ function showGameMap() {
 }
 
 function showMain() {
-  document.getElementById("main").style.display = "block";
+  document.getElementById("main").classList.remove("hidden");
 }
 
 function openModal(section) {
@@ -95,6 +105,10 @@ function openModal(section) {
 
 function closeModal() {
   document.getElementById('marketModal').classList.add('hidden');
+}
+
+function closeLandTileModal() {
+  document.getElementById('landTileModal').classList.add('hidden');
 }
 
 function applyReputationColor(el, value) {
@@ -171,13 +185,71 @@ function populatePlayer(player) {
   showGameMap();
 }
 
+// Legacy visual functions
+function switchToRegister() {
+  fetchNationalities();
+  fetchGenders();
+  document.getElementById("auth-title").textContent = "Register";
+  document.getElementById("extra-fields").style.display = "block";
+  document.getElementById("login-btn").style.display = "none";
+  document.getElementById("register-btn").style.display = "inline-block";
+  document.getElementById("switch-to-register-btn").style.display = "none";
+}
+
+function showAuthBox() {
+  document.getElementById('auth-section').style.display = 'flex';
+  document.getElementById("auth-section").classList.remove("hidden");
+}
+
+function hideAuthBox() {
+  document.getElementById('auth-status').innerText = '';
+  document.getElementById("auth-section").classList.add("hidden");
+}
+
 // Logical local functions
-function isPlayerCreated(user) {
+async function isPlayerCreated(user) {
   if (!user.player) {
     showFactionSelect();
+    const newPlayer = await waitForFactionSelection();
+    populatePlayer(newPlayer);
   } else {
     populatePlayer(user.player);
   }
+}
+
+
+function addPolicy({name, description, value = null, icon = "shield", category = "civic", genesis = null}) {
+  genesis = Array.isArray(genesis) ? genesis : [];
+  const isLocked = genesis.includes(window.user.player.faction);
+  const policyList = document.getElementById("policies-container");
+  const categoryColors = {
+    military: "text-red-300",
+    economic: "text-yellow-300",
+    civic: "text-green-300",
+    governance: "text-blue-300",
+    social: "text-pink-300",
+    environmental: "text-emerald-300",
+  };
+  const iconColor = categoryColors[category] || "text-gray-300";
+  const details = document.createElement("details");
+  details.id = name;
+  details.className = "group w-full mt-4 rounded-lg bg-gray-800 border border-gray-700";
+  details.innerHTML = `
+    <summary class="flex items-center justify-between text-sm text-gray-300 px-4 py-2 cursor-pointer select-none">
+      <div class="flex items-center gap-2">
+        <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+        <span class="font-medium">${name}</span>
+        ${isLocked ? '<i data-lucide="lock" class="w-4 h-4 text-gray-500 ml-1"></i>' : ''}
+      </div>
+      <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-500 ease-in-out group-open:rotate-180"></i>
+    </summary>
+    <div class="text-gray-300 text-xs px-4 py-3 rounded-b-lg border-t border-gray-700">
+      <div class="text-white text-sm mb-2">${description}</div>
+      ${value ? `<div class="text-yellow-400 font-semibold">${value}</div>` : ""}
+    </div>
+  `;
+  policyList.appendChild(details);
+  lucide.createIcons(); // re-render icons
 }
 
 // Logical remote functions
@@ -289,6 +361,32 @@ async function fetchGenders() {
   });
 }
 
+async function fetchPolicies() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`${apiBase}/policies`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    // Loop through the policy name keys
+    Object.entries(data).forEach(([name, config]) => {
+      const description = config.description;
+      const value = config.value || null;
+      const icon = config.icon;
+      const category = config.category;
+      const genesis = config.genesis || false;
+      addPolicy({name, description, value, icon, category, genesis});
+    });
+  } catch (error) {
+    console.error("Failed to fetch region policies:", error);
+  }
+}
+
 async function createPlayer(faction) {    
     try {
       const token = localStorage.getItem('token');
@@ -306,7 +404,7 @@ async function createPlayer(faction) {
 
       const data = await res.json();
       window.user.player = data.player;
-      populatePlayer(data.player);
+      return data.player;
     } catch (err) {
       console.error(err);
       alert("Failed to contact server.");
@@ -397,27 +495,6 @@ async function initApp() {
       window.factions = config.factions;
     });
 
-  // Faction select
-  factionCards.forEach(card => card.classList.add('enabled'));
-  factionCards.forEach(card => {
-    card.addEventListener('click', async () => {
-      if (!card.classList.contains('enabled')) return;
-      const confirmed = await confirmDialog({
-        title: "Are you sure?",
-        text: "Changing factions later is no easy feat",
-        confirmButtonText: "Join",
-        cancelButtonText: "Choose another"
-      });
-
-      if (confirmed) {
-        createPlayer(card.getAttribute('data-faction'));
-      } else {
-        return;
-      }
-
-    });
-  });
-
   // Open modal on marketplace button click
   document.querySelectorAll(".grid button").forEach(button => {
     button.addEventListener("click", () => {
@@ -431,6 +508,11 @@ async function initApp() {
     const box = document.getElementById('modalTitle');
     if (!box.contains(e.target)) {
       closeModal();
+    }
+  });
+  document.getElementById('landTileModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('landTileModal')) {
+      closeLandTileModal();
     }
   });
 
@@ -456,10 +538,11 @@ async function initApp() {
   //triggers();
   window.user = await validateToken();
   lucide.createIcons();
-  let world = await initGlobe();
   window.addEventListener('resize', resizeCanvas);
   if (window.user) {
-    isPlayerCreated(window.user);
+    await isPlayerCreated(window.user);
+    let world = await initGlobe();
+    await fetchPolicies();
     showMain();
     resizeCanvas();
     hideLoader();
